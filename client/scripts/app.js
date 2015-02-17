@@ -54,7 +54,7 @@ app.send = function() {
 
 app.init = function(){
   this.fetch();
-  //setInterval(this.send.bind(this), 5);
+  // setInterval(this.send.bind(this), 5);
   setInterval(this.fetch.bind(this),1000);
 };
 
