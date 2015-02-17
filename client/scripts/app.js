@@ -10,7 +10,7 @@ app.display = function(data){
   $messages.html('');
   // console.dir(data);
   _.each(data.results, function(item){
-    var username = '<div class="username">@' + item.username + '</div>';
+    var username = '<div class="username">' + item.username + '</div>';
     var timestamp = '<div class="createdAt">' + item.createdAt + '</div>';
     var text = '<div class="text">' + item.text + '</div>';
     $messages.append('<div class="message"><div class="username"></div>' +
@@ -19,6 +19,8 @@ app.display = function(data){
     $('.username').last().text(item.username);
     $('.createdAt').last().text(item.createdAt);
     $('.text').last().text(item.text);
+    console.log(item);
+    console.log(item.roomname);
   });
 };
 
@@ -26,11 +28,16 @@ app.getRooms = function(data) {
   app.rooms = _.uniq(_.pluck(data.results, 'roomname'));
 };
 
-app.fetch = function(order){
+app.fetch = function(room){
+  var args = room ? {roomname: room } : ''
   $.ajax({
-    url: this.server+'?'+order,
+    url: this.server,
     type: 'GET',
+    data: {
+      'order':'-createdAt',
+      'where': args },
     contentType: 'application/json',
+
     success: function(data){
       app.display(data);
       app.getRooms(data);
@@ -45,7 +52,7 @@ app.fetch = function(order){
 
 app.send = function() {
 
-  var data = {username: ":)",
+  var data = {username: window.location.search.split("=")[1],
               roomname:"lobby",
               text: ":(" };
   $.ajax({
@@ -63,9 +70,9 @@ app.send = function() {
 };
 
 app.init = function(){
-  this.fetch(this.order);
+  this.fetch('');
   // setInterval(this.send.bind(this), 5);
-  setInterval(this.fetch.bind(this, this.order),1000);
+  setInterval(this.fetch.bind(this),2000);
 };
 
 
