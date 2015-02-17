@@ -3,6 +3,7 @@ var app = {};
 app.server = 'https://api.parse.com/1/classes/chatterbox';
 app.order = 'order=-createdAt';
 app.rooms = [];
+app.room = '';
 
 app.display = function(data){
   x= data;
@@ -13,39 +14,57 @@ app.display = function(data){
     var username = '<div class="username">' + item.username + '</div>';
     var timestamp = '<div class="createdAt">' + item.createdAt + '</div>';
     var text = '<div class="text">' + item.text + '</div>';
-    $messages.append('<div class="message"><div class="username"></div>' +
+    $messages.append('<div class="chat"><div class="username"></div>' +
       '<div class="createdAt"></div><div class="text"></div></div>');
 
     $('.username').last().text(item.username);
     $('.createdAt').last().text(item.createdAt);
     $('.text').last().text(item.text);
-    console.log(item);
-    console.log(item.roomname);
   });
+
+};
+
+app.populateRooms = function(data){
+  $rooms = $("#rooms");
+  // console.log($rooms.children());
+  // console.log($rooms.children.length);
+  if ($rooms.children().length === 0){
+     app.getRooms(data);
+    _.each(app.rooms, function(room){
+      $("#rooms").append('<option value="' + room + '">'+
+        room + '</option>');
+    });
+
+    $('#changeRoom').on('click',function(){
+      var room = $('#rooms')[0].value;
+      app.room = room;
+      app.fetch();
+    });
+  }
 };
 
 app.getRooms = function(data) {
   app.rooms = _.uniq(_.pluck(data.results, 'roomname'));
 };
 
-app.fetch = function(room){
-  var args = room ? {roomname: room } : ''
+app.fetch = function(){
+  var args = app.room ? {roomname: app.room } : ''
   $.ajax({
     url: this.server,
     type: 'GET',
     data: {
       'order':'-createdAt',
       'where': args },
-    contentType: 'application/json',
+      contentType: 'application/json',
 
-    success: function(data){
-      app.display(data);
-      app.getRooms(data);
-    },
-    error: function(data){
-      console.error("GET error");
-    }
-  });
+      success: function(data){
+        app.display(data);
+        app.populateRooms(data);
+      },
+      error: function(data){
+        console.error("GET error");
+      }
+    });
 
 
 };
@@ -53,24 +72,24 @@ app.fetch = function(room){
 app.send = function() {
 
   var data = {username: window.location.search.split("=")[1],
-              roomname:"lobby",
-              text: ":(" };
-  $.ajax({
-    url: this.server,
-    type: 'POST',
-    data: JSON.stringify(data),
-    contentType: 'application/json',
-    success: function(){
-      console.log('SUCCESS!!!');
-    },
-    error: function(){
-      console.error("POST error");
-    }
-  });
-};
+  roomname:"lobby",
+  text: ":(" };
+    $.ajax({
+      url: this.server,
+      type: 'POST',
+      data: JSON.stringify(data),
+      contentType: 'application/json',
+      success: function(){
+        console.log('SUCCESS!!!');
+      },
+      error: function(){
+        console.error("POST error");
+      }
+    });
+  };
 
-app.init = function(){
-  this.fetch('');
+  app.init = function(){
+    this.fetch();
   // setInterval(this.send.bind(this), 5);
   setInterval(this.fetch.bind(this),2000);
 };
