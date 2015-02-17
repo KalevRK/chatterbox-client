@@ -5,14 +5,20 @@ app.order = 'order=-createdAt';
 app.rooms = [];
 app.room = '';
 
-// app.escape = function(string) {
-//   var newString = [];
-//   for (var c = 0; c < string.length; c++){
-//     newString.push('\\');
-//     newString.push(string[c]);
-//   }
-//   return newString.join('');
-// };
+
+$(document).ready(function(){
+    $('#postMessage').on('click',function(event){
+      event.preventDefault();
+      var text = $('#text')[0].value;
+      app.send(text);
+    });
+
+    $('#rooms').change(function(){
+      var room =  $('#rooms')[0].value;
+      app.room = decodeURI(room);
+      app.fetch(room);
+    });
+  });
 
 app.display = function(data){
   x= data;
@@ -30,13 +36,10 @@ app.display = function(data){
     $('.createdAt').last().text(item.createdAt);
     $('.text').last().text(item.text);
   });
-
 };
 
 app.populateRooms = function(data){
   $rooms = $("#rooms");
-  // console.log($rooms.children());
-  // console.log($rooms.children.length);
   if ($rooms.children().length === 0){
      app.getRooms(data);
     _.each(app.rooms, function(room){
@@ -44,17 +47,20 @@ app.populateRooms = function(data){
         encodeURI(room) + '</option>');
     });
 
-    $('#changeRoom').on('click',function(){
-      var room = $('#newRoom')[0].value ||  $('#rooms')[0].value;
-      app.room = decodeURI(room);
-      app.fetch();
+    $('#makeRoom').on('click',function(){
+      var room = $('#newRoom')[0].value;
+      console.log(room);
+      if (room){
+        app.room = decodeURI(room);
+        if (app.rooms.indexOf(room) === -1){
+          app.rooms.push(room);
+          $("#rooms").prepend('<option value="' + encodeURI(room) + '">'+
+          encodeURI(room) + '</option>');
+        }
+        app.fetch(room);
+      }
     });
 
-    $('#postMessage').on('click',function(event){
-      event.preventDefault();
-      var text = $('#text')[0].value;
-      app.send(text);
-    });
   }
 };
 
@@ -62,8 +68,8 @@ app.getRooms = function(data) {
   app.rooms = _.uniq(_.pluck(data.results, 'roomname'));
 };
 
-app.fetch = function(){
-  var args = app.room ? {roomname: app.room } : ''
+app.fetch = function(room){
+  var args = (room !== undefined) ? {roomname: decodeURI(room) } : '';
   $.ajax({
     url: this.server,
     type: 'GET',
@@ -80,12 +86,11 @@ app.fetch = function(){
         console.error("GET error");
       }
     });
-
-
 };
 
 app.send = function(text, roomname) {
   roomname = roomname || app.room;
+  console.log(roomname);
   var data = {username: window.location.search.split("=")[1],
   roomname:roomname,
   text: text };
@@ -96,6 +101,7 @@ app.send = function(text, roomname) {
       contentType: 'application/json',
       success: function(){
         console.log('SUCCESS!!!');
+        app.fetch(roomname);
       },
       error: function(){
         console.error("POST error");
@@ -105,9 +111,7 @@ app.send = function(text, roomname) {
 
   app.init = function(){
     this.fetch();
-    app.room = 'lobby';
-  // setInterval(this.send.bind(this), 5);
-  setInterval(this.fetch.bind(this),2000);
+    this.room = 'lobby';
 };
 
 
