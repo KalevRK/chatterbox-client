@@ -17,10 +17,17 @@
       <h1>chatterbox</h1>
       <!-- Your HTML goes here! -->
       <div id="roomMenu">
-      <form>
-        <select id="rooms" name="rooms"></select>
-      </form>
-      <button id="changeRoom">change room</button>
+        <form>
+          <select id="rooms" name="rooms"></select>
+          <input id="newRoom" placeholder="enter new room name here" width="30" type="text"></input>
+        </form>
+        <button id="changeRoom">change room</button>
+      </div>
+      <div id="post">
+        <form>
+          <textarea id="text" name="text" rows="4" cols="30"></textarea>
+          <button id="postMessage">Post</button>
+        </form>
       </div>
       <div id="messages"></div>
     </div>

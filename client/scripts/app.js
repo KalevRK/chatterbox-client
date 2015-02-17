@@ -5,6 +5,15 @@ app.order = 'order=-createdAt';
 app.rooms = [];
 app.room = '';
 
+// app.escape = function(string) {
+//   var newString = [];
+//   for (var c = 0; c < string.length; c++){
+//     newString.push('\\');
+//     newString.push(string[c]);
+//   }
+//   return newString.join('');
+// };
+
 app.display = function(data){
   x= data;
   $messages = $("#messages");
@@ -31,14 +40,20 @@ app.populateRooms = function(data){
   if ($rooms.children().length === 0){
      app.getRooms(data);
     _.each(app.rooms, function(room){
-      $("#rooms").append('<option value="' + room + '">'+
-        room + '</option>');
+      $("#rooms").append('<option value="' + encodeURI(room) + '">'+
+        encodeURI(room) + '</option>');
     });
 
     $('#changeRoom').on('click',function(){
-      var room = $('#rooms')[0].value;
-      app.room = room;
+      var room = $('#newRoom')[0].value ||  $('#rooms')[0].value;
+      app.room = decodeURI(room);
       app.fetch();
+    });
+
+    $('#postMessage').on('click',function(event){
+      event.preventDefault();
+      var text = $('#text')[0].value;
+      app.send(text);
     });
   }
 };
@@ -69,11 +84,11 @@ app.fetch = function(){
 
 };
 
-app.send = function() {
-
+app.send = function(text, roomname) {
+  roomname = roomname || app.room;
   var data = {username: window.location.search.split("=")[1],
-  roomname:"lobby",
-  text: ":(" };
+  roomname:roomname,
+  text: text };
     $.ajax({
       url: this.server,
       type: 'POST',
@@ -90,6 +105,7 @@ app.send = function() {
 
   app.init = function(){
     this.fetch();
+    app.room = 'lobby';
   // setInterval(this.send.bind(this), 5);
   setInterval(this.fetch.bind(this),2000);
 };
