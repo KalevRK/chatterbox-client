@@ -4,6 +4,7 @@ app.server = 'https://api.parse.com/1/classes/chatterbox';
 app.order = 'order=-createdAt';
 app.rooms = [];
 app.room = '';
+app.friends = {};
 
 
 $(document).ready(function(){
@@ -32,7 +33,17 @@ app.display = function(data){
     $messages.append('<div class="chat"><div class="username"></div>' +
       '<div class="createdAt"></div><div class="text"></div></div>');
 
-    $('.username').last().text(item.username);
+    $username = $('.username').last();
+    $username.text(item.username);
+    $username.on('click', function(){
+      var friend = $(this).text();
+      app.friends[friend] = friend;
+      $('.username:contains("'+friend+'")').addClass('friend');
+    });
+    var friend = $username.text();
+    if (app.friends.hasOwnProperty(friend)){
+    $username.addClass('friend');
+    }
     $('.createdAt').last().text(item.createdAt);
     $('.text').last().text(item.text);
   });
